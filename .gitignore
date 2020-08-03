@@ -1,2 +1,6 @@
 *.nc
 *.mat
+*.init
+*.bin
+*.forcing
+topog.slope
