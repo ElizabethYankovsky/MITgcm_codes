@@ -36,10 +36,10 @@ for i=2:nz
     z(i)=z(i-1)-dz;
 end
 
-forcingwidth = 1000.0; %in meters (original was 2km)
+forcingwidth = 5000.0; %in meters (original was 2km)
 forcingdepth = 5.0;
 time = 0:0.4:74.4; %in hours
-ntime= 74.4/0.4+1; nyf=10; nzf=250;
+ntime= 74.4/0.4+1; nyf=50; nzf=250;
 blank = rand([ny nz ntime])*0.0;
 
 U_f = 800*(34.0/16.0)*(1+sin(2*pi*time/12.4 - pi/2))/(forcingwidth*forcingdepth);
@@ -47,12 +47,12 @@ U_f = 800*(34.0/16.0)*(1+sin(2*pi*time/12.4 - pi/2))/(forcingwidth*forcingdepth)
 U_f = repmat(U_f',1,nyf,nzf); 
 U_f = permute(U_f,[2 3 1]);
 U_f(:,50:nzf,:)=0.0; %below 5m velocity is zero.
-U_forcing = blank; U_forcing(180:189,:,:)=U_f; %U velocity at western b.c.
+U_forcing = blank; U_forcing(160:209,:,:)=U_f; %U velocity at western b.c.
 
-S_f = linspace(12,24,50); %depth varying inflow over 5 meters; S_f varies in depth not in time 
+S_f = linspace(12,24,50); %depth varying inflow over 5 meters; S_f varies in depth not in time
 S_f = repmat(S_f',1,nyf,ntime);
 S_f = permute(S_f,[2 1 3]);
-S_forcing = blank+34.0; S_forcing(180:189,1:50,:)=S_f; %Salinity at western b.c.
+S_forcing = blank+34.0; S_forcing(160:209,1:50,:)=S_f; %Salinity at western b.c.
 S_forcing(:,:,1:30)=34.0; %Shutting off salinity forcing for the first tidal period 12.4 hours
 
 T_forcing = blank+15.0; %Temperature at western b.c.
@@ -93,9 +93,9 @@ for i=1:100
         end
     end
 end
-d(1:100,30:179) = triangle;
-d(1, 180:189)=-5.0; %Open the channel at the left boundary.
-d(1:100,190:339)= fliplr(triangle);
+d(1:100,10:159) = triangle;
+d(1, 160:209)=-5.0; %Open the channel at the left boundary.
+d(1:100,210:359)= fliplr(triangle);
 
 fid=fopen('topog.slope','w',ieee); fwrite(fid,d,prec); fclose(fid);
 

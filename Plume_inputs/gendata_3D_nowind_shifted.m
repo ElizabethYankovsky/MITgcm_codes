@@ -47,12 +47,12 @@ U_f = 800*(34.0/16.0)*(1+sin(2*pi*time/12.4 - pi/2))/(forcingwidth*forcingdepth)
 U_f = repmat(U_f',1,nyf,nzf); 
 U_f = permute(U_f,[2 3 1]);
 U_f(:,50:nzf,:)=0.0; %below 5m velocity is zero.
-U_forcing = blank; U_forcing(180:189,:,:)=U_f; %U velocity at western b.c.
+U_forcing = blank; U_forcing(640:649,:,:)=U_f; %U velocity at western b.c.
 
 S_f = linspace(12,24,50); %depth varying inflow over 5 meters; S_f varies in depth not in time 
 S_f = repmat(S_f',1,nyf,ntime);
 S_f = permute(S_f,[2 1 3]);
-S_forcing = blank+34.0; S_forcing(180:189,1:50,:)=S_f; %Salinity at western b.c.
+S_forcing = blank+34.0; S_forcing(640:649,1:50,:)=S_f; %Salinity at western b.c.
 S_forcing(:,:,1:30)=34.0; %Shutting off salinity forcing for the first tidal period 12.4 hours
 
 T_forcing = blank+15.0; %Temperature at western b.c.
@@ -63,7 +63,7 @@ fid=fopen('WS.forcing','w',ieee); fwrite(fid,S_forcing,prec); fclose(fid);
 fid=fopen('WT.forcing','w',ieee); fwrite(fid,T_forcing,prec); fclose(fid);
 
 %Wind forcing
-wind=0.0*rand([nx,ny,ntime])+0.03; %Pa, original was 0.03
+wind=0.0*rand([nx,ny,ntime])+0.0; %Pa, original was 0.03
 fid=fopen('Wind.forcing','w',ieee); fwrite(fid,wind,prec); fclose(fid);
 
 %Temp Profile
@@ -93,9 +93,9 @@ for i=1:100
         end
     end
 end
-d(1:100,30:179) = triangle;
-d(1, 180:189)=-5.0; %Open the channel at the left boundary.
-d(1:100,190:339)= fliplr(triangle);
+d(1:100,490:639) = triangle;
+d(1, 640:649)=-5.0; %Open the channel at the left boundary.
+d(1:100,650:799)= fliplr(triangle);
 
 fid=fopen('topog.slope','w',ieee); fwrite(fid,d,prec); fclose(fid);
 
@@ -109,13 +109,13 @@ ylabel('Y Position (km)','Fontsize',14); title('Depth (m)','Fontsize',14)
 ylim([0 100]); xlim([0 60]);
 
 figure(1011)
-area(x,d(:,185),-25.0); 
+area(x,d(:,645),-25.0); 
 set(gca,'Fontsize',14); xlabel('Horizontal position (m)','Fontsize',14)
 ylabel('Depth (m)','Fontsize',14); title('Topography','Fontsize',14)
 ylim([-25.0 0])
 
 figure(102)
-pcolor(x,z,squeeze(t(:,185,:))'); shading flat;
+pcolor(x,z,squeeze(t(:,645,:))'); shading flat;
 set(gca,'Ydir','Normal')
 colorbar; title('Temperature (Celsius)')
 xlabel('Horizontal position (m)')
@@ -126,7 +126,7 @@ set(h,'Facecolor',[0.8 0.8 0.8]);
 caxis([14 16]);
 % 
 figure(103)
-pcolor(x,z,squeeze(s(:,185,:))'); shading flat;
+pcolor(x,z,squeeze(s(:,645,:))'); shading flat;
 set(gca,'Ydir','Normal')
 colorbar; title('Salinity (psu)')
 xlabel('Horizontal position (m)')
@@ -137,12 +137,12 @@ set(hh,'FaceColor',[0.8 0.8 0.8]);
 caxis([33 35]);
 % 
 figure(104);
-plot(time,squeeze(U_forcing(185,1,:)))
+plot(time,squeeze(U_forcing(645,1,:)))
 xlabel('Time (h)')
 ylabel('U velocity of inflow (m/s)')
 % 
 figure(105);
-plot(time,squeeze(S_forcing(185,49,:)))
+plot(time,squeeze(S_forcing(645,49,:)))
 xlabel('Time (h)')
 ylabel('Salinity of inflow (m/s)')
 
