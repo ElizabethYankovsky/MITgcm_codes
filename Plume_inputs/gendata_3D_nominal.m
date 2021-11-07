@@ -36,10 +36,10 @@ for i=2:nz
     z(i)=z(i-1)-dz;
 end
 
-forcingwidth = 1000.0; %in meters (original was 2km)
+forcingwidth = 1000.0; %nominal 1000 in meters
 forcingdepth = 5.0;
 time = 0:0.4:74.4; %in hours
-ntime= 74.4/0.4+1; nyf=10; nzf=250;
+ntime= 74.4/0.4+1; nyf=forcingwidth/dy; nzf=250;
 blank = rand([ny nz ntime])*0.0;
 
 U_f = 800*(34.0/16.0)*(1+sin(2*pi*time/12.4 - pi/2))/(forcingwidth*forcingdepth);
@@ -54,6 +54,8 @@ S_f = repmat(S_f',1,nyf,ntime);
 S_f = permute(S_f,[2 1 3]);
 S_forcing = blank+34.0; S_forcing(180:189,1:50,:)=S_f; %Salinity at western b.c.
 S_forcing(:,:,1:30)=34.0; %Shutting off salinity forcing for the first tidal period 12.4 hours
+%If you want to make the salinity forcing completely barotropic, no density relative to interior fluid:
+%S_forcing(:,:,:)= 34.0;
 
 T_forcing = blank+15.0; %Temperature at western b.c.
 
@@ -85,17 +87,19 @@ for i=1:ny
 end
 d(370:600,:) = -25.0; %50 to 60km are 25m deep.
 
-triangle = rand([100 150])*0-5.0;
-for i=1:100
-    for j=1:150
-        if j>=1.5*i
-            triangle(i,j) = 0.0;
-        end
-    end
-end
-d(1:100,30:179) = triangle;
-d(1, 180:189)=-5.0; %Open the channel at the left boundary.
-d(1:100,190:339)= fliplr(triangle);
+%triangle = rand([100 150])*0-5.0;
+%for i=1:100
+%    for j=1:150
+%        if j>=1.5*i
+%            triangle(i,j) = 0.0;
+%        end
+%    end
+%end
+%d(1:100,30:179) = triangle; Uncomment to have the wedge jutting out
+%d(1, 180:189)=-5.0; %Open the channel at the left boundary.
+%d(1:100,190:339)= fliplr(triangle); Uncomment to have the wedge jutting out
+d(1:100,:)=0.0;
+d(1:100,180:189)=-5.; %nominal 180:189 is the channel
 
 fid=fopen('topog.slope','w',ieee); fwrite(fid,d,prec); fclose(fid);
 
@@ -121,7 +125,7 @@ colorbar; title('Temperature (Celsius)')
 xlabel('Horizontal position (m)')
 ylabel('Depth (m)'); 
 hold on; 
-h =area(x,d(:,1),-25);
+h =area(x,d(:,185),-25);
 set(h,'Facecolor',[0.8 0.8 0.8]);
 caxis([14 16]);
 % 
@@ -132,7 +136,7 @@ colorbar; title('Salinity (psu)')
 xlabel('Horizontal position (m)')
 ylabel('Depth (m)'); 
 hold on; 
-hh =area(x,d(:,1),-25); 
+hh =area(x,d(:,185),-25); 
 set(hh,'FaceColor',[0.8 0.8 0.8]);
 caxis([33 35]);
 % 
