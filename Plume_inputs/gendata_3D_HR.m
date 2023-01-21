@@ -7,14 +7,14 @@ prec='real*8';
 ieee='b';
 
 % Dimensions of grid
-nx=30000;
-ny=40000;
+nx=4000;
+ny=4000;
 nz=250;
 % Nominal depth of model (meters)
 H=25.0;
 % Size of domain
 Lx=60.0e3;
-Ly=80.0e3;
+Ly=60.0e3;
 
 % Resolution (m)
 dx=Lx/nx;
@@ -36,7 +36,7 @@ for i=2:nz
     z(i)=z(i-1)-dz;
 end
 
-forcingwidth = 1000.0; %nominal 1000 in meters
+forcingwidth = 1005.0; %nominal 1000 in meters
 forcingdepth = 5.0;
 time = 0:0.4:74.4; %in hours
 ntime= 74.4/0.4+1; nyf=forcingwidth/dy; nzf=250;
@@ -47,12 +47,12 @@ U_f = 800*(34.0/16.0)*(1+sin(2*pi*time/12.4 - pi/2))/(forcingwidth*forcingdepth)
 U_f = repmat(U_f',1,nyf,nzf); 
 U_f = permute(U_f,[2 3 1]);
 U_f(:,50:nzf,:)=0.0; %below 5m velocity is zero.
-U_forcing = blank; U_forcing(4000:4499,:,:)=U_f; %U velocity at western b.c.
+U_forcing = blank; U_forcing(200:266,:,:)=U_f; %U velocity at western b.c.
 
 S_f = linspace(12,24,50); %depth varying inflow over 5 meters; S_f varies in depth not in time 
 S_f = repmat(S_f',1,nyf,ntime);
 S_f = permute(S_f,[2 1 3]);
-S_forcing = blank+34.0; S_forcing(4000:4499,1:50,:)=S_f; %Salinity at western b.c.
+S_forcing = blank+34.0; S_forcing(200:266,1:50,:)=S_f; %Salinity at western b.c.
 S_forcing(:,:,1:30)=34.0; %Shutting off salinity forcing for the first tidal period 12.4 hours
 %If you want to make the salinity forcing completely barotropic, no density relative to interior fluid:
 %S_forcing(:,:,:)= 34.0;
@@ -64,32 +64,23 @@ fid=fopen('WU.forcing','w',ieee); fwrite(fid,U_forcing,prec); fclose(fid);
 fid=fopen('WS.forcing','w',ieee); fwrite(fid,S_forcing,prec); fclose(fid);
 fid=fopen('WT.forcing','w',ieee); fwrite(fid,T_forcing,prec); fclose(fid);
 
-%%Wind forcing
-%wind=0.0*rand([nx,ny,ntime])+0.03; %Pa, original was 0.03
-%fid=fopen('Wind.forcing','w',ieee); fwrite(fid,wind,prec); fclose(fid);
-
-%%Temp Profile
-%t=0.0*rand([nx,ny,nz])+15.0;
-%fid=fopen('T.init','w',ieee); fwrite(fid,t,prec); fclose(fid);
-
-%Salinity profile
-%s=0.0*rand([nx,ny,nz])+34.0;
-%fid=fopen('S.init','w',ieee); fwrite(fid,s,prec); fclose(fid);
+%Wind forcing
+wind=0.0*rand([nx,ny,ntime])+0.03; %Pa, original was 0.03
+fid=fopen('Wind.forcing','w',ieee); fwrite(fid,wind,prec); fclose(fid);
 
 % Topography
 d=0.0*rand([nx,ny]);
-d(2:4999,:) = -5.0; %First 10km in x are 5m deep. Keep wall at left (d=0m).
+%d(2:666,:) = -5.0; %First 10km in x are 5m deep. Keep wall at left (d=0m).
 for i=1:ny
-    d(5000:5999,i) = -linspace(5.0, 10.0, 1000); %10 to 12km slope from 5 to 10 m depth. 
+    d(667:799,i) = -linspace(5.0, 10.0, 133); %10 to 12km slope from 5 to 10 m depth. 
 end
 for i=1:ny
-    d(6000:18499,i) = -linspace(10.0, 25.0, 12500); %10 to 37km slope.
+    d(800:2466,i) = -linspace(10.0, 25.0, 1667); %12 to 37km slope from 10 to 25 m depth.
 end
-d(18500:30000,:) = -25.0; %37 to 60km are 25m deep.
+d(2467:4000,:) = -25.0; %37 to 60km are 25m deep.
 
-
-d(1:5000,:)=0.0;
-d(1:5000,4000:4499)=-5.; %nominal 180:189 is the channel
+d(1:666,:)=0.0;
+d(1:666,200:267)=-5.; %3-4ish km is the channel
 
 fid=fopen('topog.slope','w',ieee); fwrite(fid,d,prec); fclose(fid);
 
@@ -100,43 +91,22 @@ figure(101)
 contourf(x/1000,y/1000,d',500,'LineColor','none'); colorbar
 set(gca,'Fontsize',14); xlabel('X position (km)','Fontsize',14)
 ylabel('Y Position (km)','Fontsize',14); title('Depth (m)','Fontsize',14)
-ylim([0 100]); xlim([0 60]);
+ylim([0 60]); xlim([0 60]);
 
 figure(1011)
-area(x,d(:,4250),-25.0); 
+area(x,d(:,230),-25.0); 
 set(gca,'Fontsize',14); xlabel('Horizontal position (m)','Fontsize',14)
 ylabel('Depth (m)','Fontsize',14); title('Topography','Fontsize',14)
 ylim([-25.0 0])
 
-figure(102)
-pcolor(x,z,squeeze(t(:,4250,:))'); shading flat;
-set(gca,'Ydir','Normal')
-colorbar; title('Temperature (Celsius)')
-xlabel('Horizontal position (m)')
-ylabel('Depth (m)'); 
-hold on; 
-h =area(x,d(:,4250),-25);
-set(h,'Facecolor',[0.8 0.8 0.8]);
-caxis([14 16]);
-% 
-figure(103)
-pcolor(x,z,squeeze(s(:,4250,:))'); shading flat;
-set(gca,'Ydir','Normal')
-colorbar; title('Salinity (psu)')
-xlabel('Horizontal position (m)')
-ylabel('Depth (m)'); 
-hold on; 
-hh =area(x,d(:,4250),-25); 
-set(hh,'FaceColor',[0.8 0.8 0.8]);
-caxis([33 35]);
 % 
 figure(104);
-plot(time,squeeze(U_forcing(4250,1,:)))
+plot(time,squeeze(U_forcing(230,1,:)))
 xlabel('Time (h)')
 ylabel('U velocity of inflow (m/s)')
 % 
 figure(105);
-plot(time,squeeze(S_forcing(4250,49,:)))
+plot(time,squeeze(S_forcing(230,49,:)))
 xlabel('Time (h)')
 ylabel('Salinity of inflow (m/s)')
 

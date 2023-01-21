@@ -44,6 +44,7 @@ blank = rand([ny nz ntime])*0.0;
 
 U_f = 800*(34.0/16.0)*(1+sin(2*pi*time/12.4 - pi/2))/(forcingwidth*forcingdepth);
 %U_f(8:ntime)=800*(34.0/16.0)/(forcingwidth*forcingdepth); %SHUTTING OFF THE TIDES! otherwise leave this line out
+
 U_f = repmat(U_f',1,nyf,nzf); 
 U_f = permute(U_f,[2 3 1]);
 U_f(:,50:nzf,:)=0.0; %below 5m velocity is zero.
